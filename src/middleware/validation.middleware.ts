@@ -18,9 +18,11 @@ function isEnglishNested(b: AnyObj) {
 
 function normalizeDateString(v: any): string {
   if (!v) return '';
-  if (v instanceof Date) return v.toISOString();
+  if (v instanceof Date) {
+    return v.toISOString().split('T')[0];
+  }
   const d = new Date(v);
-  return isNaN(d.getTime()) ? String(v) : d.toISOString();
+  return isNaN(d.getTime()) ? String(v) : d.toISOString().split('T')[0];
 }
 
 function mapFromEnglishNested(b: AnyObj): Partial<Candidature> {

@@ -9,10 +9,14 @@ export function mapFrenchToCandidature(payload: FRPayload): Candidature {
     c.lastName = payload.nom ?? '';
     c.nationality = payload.nationalite ?? '';
     c.gender = payload.sexe ?? '';
-    // Normalize date to ISO if possible (IsDateString expects ISO)
+    // Normalize date to ISO 8601 format (YYYY-MM-DD)
     if (payload.date_naissance) {
         const d = new Date(payload.date_naissance);
-        c.dateOfBirth = isNaN(d.getTime()) ? String(payload.date_naissance) : d.toISOString();
+        if (!isNaN(d.getTime())) {
+            c.dateOfBirth = d.toISOString().split('T')[0];
+        } else {
+            c.dateOfBirth = String(payload.date_naissance);
+        }
     } else {
         c.dateOfBirth = '';
     }

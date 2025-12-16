@@ -1,5 +1,5 @@
 import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn } from 'typeorm';
-import { IsEmail, IsNotEmpty, IsDateString, IsArray, IsJSON, IsBoolean, IsOptional } from 'class-validator';
+import { IsEmail, IsNotEmpty, IsISO8601, IsArray, IsJSON, IsBoolean, IsOptional } from 'class-validator';
 
 @Entity('candidatures')
 export class Candidature {
@@ -56,7 +56,8 @@ export class Candidature {
   gender: string;
 
   @Column()
-  @IsDateString()
+  @IsISO8601()
+  @IsNotEmpty()
   dateOfBirth: string;
 
   @Column()
