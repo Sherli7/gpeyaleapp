@@ -1,10 +1,8 @@
-
 import { Request, Response } from 'express';
 import { CandidatureService } from '../services/CandidatureService';
 import { EmailService } from '../services/EmailService';
-// import { mapFrenchToCandidature } from '../mappers/CandidatureMapper';
-// const entity = mapFrenchToCandidature(payloadFR);
-// await candidatureRepository.save(entity);
+import { mapFrenchToCandidature } from '../mappers/CandidatureMapper';
+
 export class CandidatureController {
   private candidatureService = new CandidatureService();
   private emailService = new EmailService();
@@ -13,26 +11,29 @@ export class CandidatureController {
     try {
       console.log('Nouvelle demande de candidature reçue');
       console.log('Données reçues :', JSON.stringify(req.body, null, 2));
-      
+
+      // Normaliser le payload (FR/EN) avant validation
+      const mappedPayload = mapFrenchToCandidature(req.body);
+
       // Valider et créer la candidature
-      const candidature = await this.candidatureService.createCandidature(req.body);
-      
+      const candidature = await this.candidatureService.createCandidature(mappedPayload);
+
       console.log('Candidature créée avec succès, ID:', candidature.id);
-      
+
       // Envoyer l'email de confirmation de manière asynchrone
-      this.emailService.sendConfirmationEmail(candidature)
+      this.emailService
+        .sendConfirmationEmail(candidature)
         .then(() => {
           console.log(`Email de confirmation envoyé à ${candidature.email}`);
         })
         .catch(error => {
-          console.error('Échec de l\'envoi de l\'email de confirmation:', {
+          console.error("Échec de l'envoi de l'email de confirmation:", {
             error: error.message,
             candidatureId: candidature.id,
-            email: candidature.email
+            email: candidature.email,
           });
         });
-      
-      // Répondre avec succès
+
       res.status(201).json({
         success: true,
         data: {
@@ -40,7 +41,7 @@ export class CandidatureController {
           firstName: candidature.firstName,
           lastName: candidature.lastName,
           email: candidature.email,
-          submissionDate: candidature.submissionDate
+          submissionDate: candidature.submissionDate,
         },
         message: 'Candidature soumise avec succès',
       });
@@ -49,19 +50,16 @@ export class CandidatureController {
       console.error('Erreur lors de la création de la candidature:', {
         error: errorMessage,
         stack: error instanceof Error ? error.stack : undefined,
-        body: req.body
+        body: req.body,
       });
-      
-      // Déterminer le code d'erreur approprié
+
       const statusCode = errorMessage.includes('validation') ? 400 : 500;
-      
+
       res.status(statusCode).json({
         success: false,
         message: 'Erreur lors de la création de la candidature',
-        error: errorMessage
+        error: errorMessage,
       });
     }
   }
-
-  // Autres méthodes pour récupérer, mettre à jour, supprimer les candidatures...
 }
