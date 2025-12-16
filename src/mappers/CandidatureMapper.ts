@@ -10,25 +10,27 @@ export function mapFrenchToCandidature(payload: FRPayload): Candidature {
     c.nationality = payload.nationalite ?? '';
     c.gender = payload.sexe ?? '';
     // Normalize date to ISO 8601 format (YYYY-MM-DD)
-    if (payload.date_naissance) {
-        const d = new Date(payload.date_naissance);
+    // Support both snake_case (date_naissance) and camelCase (dateNaissance)
+    const dateValue = payload.dateNaissance ?? payload.date_naissance;
+    if (dateValue) {
+        const d = new Date(dateValue);
         if (!isNaN(d.getTime())) {
             c.dateOfBirth = d.toISOString().split('T')[0];
         } else {
-            c.dateOfBirth = String(payload.date_naissance);
+            c.dateOfBirth = String(dateValue);
         }
     } else {
         c.dateOfBirth = '';
     }
-    c.placeOfBirth = payload.lieu_naissance ?? '';
+    c.placeOfBirth = payload.lieuNaissance ?? payload.lieu_naissance ?? '';
     c.phoneNumber = payload.telephone ?? '';
     c.email = payload.email ?? '';
 
     c.organization = payload.organisation ?? '';
     c.country = payload.pays ?? '';
     c.department = payload.departement ?? '';
-    c.currentPosition = payload.poste_actuel ?? '';
-    c.taskDescription = payload.description_taches ?? '';
+    c.currentPosition = payload.posteActuel ?? payload.poste_actuel ?? '';
+    c.taskDescription = payload.descriptionTaches ?? payload.description_taches ?? '';
 
     c.diploma = payload.diplome ?? '';
     c.institution = payload.institution ?? '';
@@ -42,23 +44,25 @@ export function mapFrenchToCandidature(payload: FRPayload): Candidature {
     c.languages = Array.isArray(payload.langues) ? payload.langues : (payload.langues ? [payload.langues] : []);
     c.languageLevels = payload.niveaux && typeof payload.niveaux === 'object' ? payload.niveaux : {};
 
-    c.expectedResults = payload.resultats_attendus ?? '';
-    c.otherInformation = payload.autres_infos ?? '';
+    c.expectedResults = payload.resultatsAttendus ?? payload.resultats_attendus ?? '';
+    c.otherInformation = payload.autresInfos ?? payload.autres_infos ?? '';
 
     // fundingSource is a text[] in entity; accept single string or array
-    if (Array.isArray(payload.mode_financement)) {
-        c.fundingSource = payload.mode_financement;
-    } else if (payload.mode_financement) {
-        c.fundingSource = [String(payload.mode_financement)];
+    // Support both 'mode' and 'mode_financement'
+    const fundingValue = payload.mode ?? payload.mode_financement;
+    if (Array.isArray(fundingValue)) {
+        c.fundingSource = fundingValue;
+    } else if (fundingValue) {
+        c.fundingSource = [String(fundingValue)];
     } else {
         c.fundingSource = [];
     }
 
-    c.institutionName = payload.institution_financement ?? '';
-    c.contactPerson = payload.contact_financement ?? '';
-    c.contactEmail = payload.email_contact_financement ?? null;
+    c.institutionName = payload.institutionFinancement ?? payload.institution_financement ?? '';
+    c.contactPerson = payload.contactFinancement ?? payload.contact_financement ?? '';
+    c.contactEmail = payload.emailContactFinancement ?? payload.email_contact_financement ?? null;
 
-    c.informationSource = payload.source_information ?? '';
+    c.informationSource = payload.source ?? payload.source_information ?? '';
     c.consent = Boolean(payload.consentement ?? payload.consent ?? false);
 
     // submissionDate will be set by CreateDateColumn on save; keep current Date for in-memory object

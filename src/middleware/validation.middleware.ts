@@ -7,7 +7,7 @@ import { mapFrenchToCandidature } from '../mappers/CandidatureMapper';
 type AnyObj = Record<string, any>;
 
 function isFrenchFlat(b: AnyObj) {
-  return !!(b && (b.prenom || b.nom || b.date_naissance));
+  return !!(b && (b.prenom || b.nom || b.dateNaissance || b.date_naissance));
 }
 function isEnglishFlat(b: AnyObj) {
   return !!(b && (b.firstName || b.lastName || b.email));
