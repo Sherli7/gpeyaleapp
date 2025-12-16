@@ -116,7 +116,11 @@ export function validationMiddleware(type: { new (): Candidature }, skipMissingP
       });
     }
 
-    const dto = plainToInstance(type, mappedData);
+    // Si le mapper renvoie dÇjà une instance (cas mapFrenchToCandidature), on la valide directement
+    const dto = mappedData instanceof Candidature ? mappedData : plainToInstance(type, mappedData);
+
+    console.log('Payload normalisÇ¸ pour validation:', JSON.stringify(dto, null, 2));
+
     validate(dto as object, { skipMissingProperties, validationError: { target: false } })
       .then((errors: ValidationError[]) => {
         if (errors.length > 0) {
@@ -125,7 +129,8 @@ export function validationMiddleware(type: { new (): Candidature }, skipMissingP
             .join('; ');
           res.status(400).json({
             success: false,
-            message: `Échec de la validation : ${message}`,
+            // ASCII to avoid encoding issues in logs/responses
+            message: `Echec de la validation : ${message}`,
             errors: errors.map(error => ({
               property: error.property,
               constraints: error.constraints,
