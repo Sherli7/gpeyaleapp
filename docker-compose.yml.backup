@@ -7,18 +7,20 @@ services:
     restart: unless-stopped
     ports:
       - "3003:3003"
-    
-    # Charger les variables depuis le fichier .env
-    env_file:
-      - .env
-    
-    # Variables spécifiques au container (peuvent override celles du .env)
     environment:
       - NODE_ENV=production
       - FRONTEND_URL=https://gpe-yale.edocsflow.com
-      # Les variables DB_*, EMAIL_*, PORT sont maintenant chargées depuis .env via env_file
-      # Plus besoin de les redéfinir ici sauf si vous voulez les overrider
-    
+      - PORT=3003
+      - DB_HOST=host.docker.internal   # pour atteindre Postgres sur l’hôte
+      - DB_PORT=5433                   # adapte selon ta config
+      - DB_USERNAME=postgres
+      - DB_PASSWORD=${DB_PASSWORD}
+      - DB_NAME=gpe_yale
+      - EMAIL_HOST=smtp.gmail.com
+      - EMAIL_PORT=587
+      - EMAIL_USER=${EMAIL_USER}
+      - EMAIL_PASS=${EMAIL_PASS}
+      - EMAIL_FROM=${EMAIL_FROM}
     extra_hosts:
       - "host.docker.internal:host-gateway" # utile sur Linux
     networks:
@@ -32,3 +34,4 @@ services:
 networks:
   app-network:
     driver: bridge
+
